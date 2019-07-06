@@ -34,7 +34,7 @@ const BookType = new GraphQLObjectType({
     genre: { type: GraphQLString },
     author: {
       type: AuthorType,
-      resolve(parent, args) {
+      resolve(parent) {
         return authors.find(author => author.id === parent.id);
       }
     }
@@ -49,7 +49,7 @@ const AuthorType = new GraphQLObjectType({
     age: { type: GraphQLInt },
     books: {
       type: new GraphQLList(BookType), // list allows you to type out a list an existing graphQL type
-      resolve(parent, args) {
+      resolve(parent) {
         return books.filter(book => book.authorId === parent.id);
       }
     }
@@ -61,12 +61,19 @@ const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
     book: {
-      // book root query, info below on how to deal request
       type: BookType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
         // base graphql data to return - code to get data from db / other source
         return books.find(book => book.id === args.id);
+      }
+    },
+    books: {
+      type: new GraphQLList(BookType),
+      args: { id: { type: GraphQLID } },
+      resolve() {
+        // base graphql data to return - code to get data from db / other source
+        return books;
       }
     },
     author: {
@@ -75,6 +82,14 @@ const RootQuery = new GraphQLObjectType({
       resolve(parent, args) {
         // base graphql data to return - code to get data from db / other source
         return authors.find(author => author.id === args.id);
+      }
+    },
+    authors: {
+      type: GraphQLList(AuthorType),
+      args: { id: { type: GraphQLID } },
+      resolve() {
+        // base graphql data to return - code to get data from db / other source
+        return authors;
       }
     }
   }
