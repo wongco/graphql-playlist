@@ -1,10 +1,20 @@
-import React from "react";
-import { graphql } from "react-apollo";
-import { getAuthorsQuery } from "../queries/queries";
+import React, { useState } from "react";
+import { graphql, compose } from "react-apollo";
+import {
+  getAuthorsQuery,
+  addBookMutation,
+  getBooksQuery
+} from "../queries/queries";
 
 const AddBook = props => {
+  const [inputFields, setInputFields] = useState({
+    name: "",
+    genre: "",
+    authorId: ""
+  });
+
   const displayAuthors = () => {
-    const { data } = props;
+    const data = props.getAuthorsQuery;
     if (data.loading) {
       return <option disabled>Loading Authors...</option>;
     }
@@ -14,21 +24,43 @@ const AddBook = props => {
       </option>
     ));
   };
+
+  const handleChange = event => {
+    setInputFields({
+      ...inputFields,
+      [event.target.name]: event.target.value
+    });
+  };
+
+  const handleSubmit = event => {
+    event.preventDefault();
+    const { name, genre, authorId } = inputFields;
+    props.addBookMutation({
+      variables: {
+        name,
+        genre,
+        authorId
+      },
+      refetchQueries: [{ query: getBooksQuery }]
+    });
+    // todo: clear useState inputs
+  };
+
   return (
-    <form id="add-book">
+    <form id="add-book" onSubmit={handleSubmit}>
       <div className="field">
         <label>Book name:</label>
-        <input type="text" />
+        <input type="text" name="name" onChange={handleChange} />
       </div>
 
       <div className="field">
         <label>Genre:</label>
-        <input type="text" />
+        <input type="text" name="genre" onChange={handleChange} />
       </div>
 
       <div className="field">
         <label>Author:</label>
-        <select>
+        <select onChange={handleChange} name="authorId">
           <option>Select author</option>
           {displayAuthors()}
         </select>
@@ -39,6 +71,9 @@ const AddBook = props => {
   );
 };
 
-const graphqlConnectedComponent = graphql(getAuthorsQuery);
+const graphqlComposedComponent = compose(
+  graphql(getAuthorsQuery, { name: "getAuthorsQuery" }),
+  graphql(addBookMutation, { name: "addBookMutation" })
+);
 
-export default graphqlConnectedComponent(AddBook);
+export default graphqlComposedComponent(AddBook);
