@@ -6,7 +6,8 @@ const {
   GraphQLID,
   GraphQLSchema,
   GraphQLInt,
-  GraphQLList // allows for an array/list of a specific type
+  GraphQLList, // allows for an array/list of a specific type
+  GraphQLNonNull // prevents value from being null during mutations
 } = graphql;
 const Book = require("../models/book"); // mongoDB Schema
 const Author = require("../models/author"); // mongoDB Schema
@@ -22,7 +23,7 @@ const BookType = new GraphQLObjectType({
       type: AuthorType,
       resolve(parent) {
         // logic to pull data on author of book
-        // based on data available on Book Schema
+        // based on data available on parent (Book) Schema
         return Author.findById(parent.authorId);
       }
     }
@@ -91,8 +92,8 @@ const Mutation = new GraphQLObjectType({
     addAuthor: {
       type: AuthorType,
       args: {
-        name: { type: GraphQLString },
-        age: { type: GraphQLInt }
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        age: { type: new GraphQLNonNull(GraphQLInt) }
       },
       resolve(parent, args) {
         // do the actual db work of saving data to mongo
@@ -107,9 +108,9 @@ const Mutation = new GraphQLObjectType({
     addBook: {
       type: BookType,
       args: {
-        name: { type: GraphQLString },
-        genre: { type: GraphQLString },
-        authorId: { type: GraphQLID }
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        genre: { type: new GraphQLNonNull(GraphQLString) },
+        authorId: { type: new GraphQLNonNull(GraphQLID) }
       },
       resolve(parent, args) {
         // do the actual db work of saving data to mongo
