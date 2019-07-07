@@ -15,7 +15,7 @@ mongoose.connect(
   { useNewUrlParser: true }
 );
 mongoose.connection.once("open", () => {
-  console.log("Connected");
+  console.log("Connected to Database");
 });
 
 app.use(
